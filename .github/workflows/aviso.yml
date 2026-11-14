@@ -1,0 +1,63 @@
+# Envia a notificação do Albruga Painel para os iPhones cadastrados.
+# Dispara: (1) à mão, em Actions > Aviso Albruga Painel > Run workflow;
+#          (2) quando o arquivo avisos/aviso.json mudar no repositório.
+name: Aviso Albruga Painel
+
+on:
+  workflow_dispatch:
+    inputs:
+      titulo:
+        description: "Título do aviso"
+        default: "Albruga Painel"
+      texto:
+        description: "Texto do aviso"
+        default: "Teste: os avisos da linha estão funcionando."
+  push:
+    paths: ["avisos/aviso.json"]
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "pyjwt[crypto]==2.9.0" "httpx[http2]==0.27.2"
+      - name: Enviar notificação
+        env:
+          APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
+          APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
+          APNS_APARELHOS: ${{ secrets.APNS_APARELHOS }}
+          APNS_TEAM_ID: "6VJ9ZA6WZ7"
+          APNS_TOPIC: "com.gabrielandrade.albrugapainel"
+          TITULO: ${{ github.event.inputs.titulo }}
+          TEXTO: ${{ github.event.inputs.texto }}
+        shell: python
+        run: |
+          import json, os, sys, time
+          import httpx, jwt
+          titulo, texto = os.environ.get("TITULO") or "", os.environ.get("TEXTO") or ""
+          if not texto and os.path.exists("avisos/aviso.json"):
+              a = json.load(open("avisos/aviso.json", encoding="utf-8"))
+              titulo, texto = a.get("titulo", ""), a.get("texto", "")
+          titulo = titulo or "Albruga Painel"
+          if not texto:
+              print("Sem texto; nada a enviar"); sys.exit(0)
+          tok = jwt.encode({"iss": os.environ["APNS_TEAM_ID"], "iat": int(time.time())},
+                           os.environ["APNS_KEY_P8"].strip(), algorithm="ES256",
+                           headers={"kid": os.environ["APNS_KEY_ID"].strip()})
+          cab = {"authorization": f"bearer {tok}", "apns-topic": os.environ["APNS_TOPIC"],
+                 "apns-push-type": "alert", "apns-priority": "10"}
+          corpo = {"aps": {"alert": {"title": titulo, "body": texto}, "sound": "default"}}
+          aparelhos = [x.strip() for x in os.environ["APNS_APARELHOS"].replace(",", "\n").splitlines() if x.strip()]
+          falhas = 0
+          with httpx.Client(http2=True, timeout=20) as c:
+              for ap in aparelhos:
+                  for host in ("api.sandbox.push.apple.com", "api.push.apple.com"):
+                      r = c.post(f"https://{host}/3/device/{ap}", headers=cab, json=corpo)
+                      print(host, "...", ap[-6:], r.status_code, r.text)
+                      if r.status_code == 200: break
+                  else:
+                      falhas += 1
+          sys.exit(1 if falhas else 0)
