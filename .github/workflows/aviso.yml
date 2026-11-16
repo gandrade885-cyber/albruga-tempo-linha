@@ -28,7 +28,7 @@ jobs:
         env:
           APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
           APNS_KEY_ID: "5KUAZ25KK5"
-          APNS_APARELHOS: ${{ secrets.APNS_APARELHOS }}
+          APNS_APARELHOS: ${{ secrets.APNS_APARELHOS }},${{ secrets.APNS_APARELHOS_BRUNO }}
           APNS_TEAM_ID: "6VJ9ZA6WZ7"
           APNS_TOPIC: "com.gabrielandrade.albrugapainel"
           TITULO: ${{ github.event.inputs.titulo }}
