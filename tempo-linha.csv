@@ -1,5 +1,8 @@
-Data,Base,Cores,Inicio,Fim,Obs
-13/11/2026,ESCURA,Linheiro Escuro,07:11,07:15,1 perfil
-13/11/2026,CLARA,Carvalho Light e Linheiro Light,07:59,09:27,
-13/11/2026,INTERMEDIARIA,Linheiro Claro e Carvalho,10:00,11:07,
-13/11/2026,PRETO F.,Preto Fosco,11:42,16:56,
+Data,Tipo,Base,Cores,Inicio,Fim,Obs
+13/11/2026,pintura,ESCURA,Linheiro Escuro,07:11,07:15,1 perfil
+13/11/2026,pintura,CLARA,Carvalho Light e Linheiro Light,07:59,09:27,
+13/11/2026,pintura,INTERMEDIARIA,Linheiro Claro e Carvalho,10:00,11:07,
+13/11/2026,pintura,PRETO F.,Preto Fosco,11:42,16:56,
+16/11/2026,pintura,PRETO F.,Preto Fosco,06:43,18:07,
+16/11/2026,troca,,,18:07,18:46,
+16/11/2026,pintura,BRANCO 2112,Branco 2112,18:46,19:52,
